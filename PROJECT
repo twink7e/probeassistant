@@ -1,0 +1,20 @@
+domain: k8s.operatoros.io
+layout:
+- go.kubebuilder.io/v3
+projectName: probeassistant
+repo: github.com/twink7e/probeassistant
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: k8s.operatoros.io
+  group: apps
+  kind: ProbeAssistant
+  path: github.com/twink7e/probeassistant/api/v1alpha1
+  version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+version: "3"

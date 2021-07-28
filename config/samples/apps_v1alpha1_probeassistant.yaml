@@ -1,0 +1,7 @@
+apiVersion: apps.k8s.operatoros.io/v1alpha1
+kind: ProbeAssistant
+metadata:
+  name: probeassistant-sample
+spec:
+  # Add fields here
+  foo: bar
