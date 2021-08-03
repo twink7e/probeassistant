@@ -17,6 +17,6 @@ func SetupWithManager(mgr manager.Manager) error {
 	// server.Register("/validate-apps-k8s-operatoros-io-v1alpha1-probeassistant", &webhook.Admission{Handler: &pavalidating.ProbeAssistantValidatingHandler{}})
 	// ProbeAssistant Mutating
 	//server.Register()
-	server.Register("/mutate-pod", &webhook.Admission{Handler: &podmutating.PodCreateHandler{}})
+	server.Register("/mutate-v1-pod", &webhook.Admission{Handler: &podmutating.PodCreateHandler{}})
 	return nil
 }

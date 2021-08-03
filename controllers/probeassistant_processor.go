@@ -8,7 +8,7 @@ import (
 	"k8s.io/klog/v2"
 
 	appsv1alpha1 "github.com/twink7e/probeassistant/api/v1alpha1"
-	"github.com/twink7e/probeassistant/pkg/control/probe_assistant"
+	"github.com/twink7e/probeassistant/pkg/control/probeassistant"
 	"github.com/twink7e/probeassistant/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -58,7 +58,7 @@ func (p *Processor) getMatchingPods(ctx context.Context, pa *appsv1alpha1.ProbeA
 	// 2. Already has binding ProbeAssis
 	var filteredPods []*corev1.Pod
 	for _, pod := range selectedPods {
-		if probe_assistant.IsActivePod(pod) && isPodBindProbeAssistant(pod) {
+		if probeassistant.IsActivePod(pod) && isPodBindProbeAssistant(pod) {
 			filteredPods = append(filteredPods, pod)
 		}
 	}
@@ -118,7 +118,7 @@ func calculateStatus(pa *appsv1alpha1.ProbeAssistant, pods []*corev1.Pod) *appsv
 }
 
 func isPodBindProbeAssistant(pod *corev1.Pod) bool {
-	ns, name := probe_assistant.GetPodBindProbeAssistantName(pod)
+	ns, name := probeassistant.GetPodBindProbeAssistantName(pod)
 	if ns != "" && name != "" {
 		return true
 	}

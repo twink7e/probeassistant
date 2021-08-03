@@ -1,4 +1,4 @@
-package probe_assistant
+package probeassistant
 
 import (
 	"context"
@@ -27,6 +27,15 @@ type ProbeAssistantContainerStatus struct {
 	StatusOfLiveness  string      `json:"statusOfLiveness"`
 	StatusOfReadiness string      `json:"statusOfReadiness"`
 	UpdateTimestamp   metav1.Time `json:"updateTimestamp"`
+}
+
+func NewProbeAssistantContainerStatus(paName string) *ProbeAssistantContainerStatus {
+	return &ProbeAssistantContainerStatus{
+		paName,
+		"",
+		"",
+		metav1.Now(),
+	}
 }
 
 // IsActivePod determines the pod whether need be injected and updated
@@ -115,35 +124,36 @@ func CheckHasContainerName(name string, containerNames *[]string) bool {
 	return false
 }
 
-func MakeProbeAssistantBingdingPod(pod *corev1.Pod, pa *appsv1alpha1.ProbeAssistant) error {
-	var containersName *[]string
-	containersName = GetBindingContainers(pod)
+func GetMatchedContainerIndex(pod *corev1.Pod, containerNames *[]string) *[]int {
+	index := []int{}
+	for idx, container := range pod.Spec.Containers {
+		for _, cname := range *containerNames {
+			if container.Name == cname {
+				index = append(index, idx)
+			}
+		}
+	}
+	return &index
+}
 
-	if len(*containersName) < 0 {
-		klog.V(3).Infof(
-			"ProbeAssistant: Pod(%s.%s) did not match any container name, please check pod's annotation(%s).",
-			pod.Namespace,
-			pod.Name,
-			ProbeAssistantBindingContainersAnnotation)
-		return nil
-	}
+func MakeProbeAssistantBingdingPod(matchedContainerIndex *[]int, pod *corev1.Pod, pa *appsv1alpha1.ProbeAssistant) error {
+
 	statusMap := make(ProbeAssistantContainerStatusMap)
-	for _, container := range pod.Spec.Containers {
-		if !CheckHasContainerName(container.Name, containersName) {
-			break
-		}
-		statusMap[pa.Name] = ProbeAssistantContainerStatus{
-			pa.Name,
-			"",
-			"",
-			metav1.Now(),
-		}
+	for _, cidx := range *matchedContainerIndex {
+		conntainer := pod.Spec.Containers[cidx]
+		statusMap[conntainer.Name] = *NewProbeAssistantContainerStatus(pa.Name)
 	}
+	if pod.Annotations == nil {
+		pod.Annotations = make(map[string]string)
+	}
+
+	// update pod annotations
 	if statusMapRaw, err := json.Marshal(statusMap); err != nil {
 		return err
 	} else {
 		pod.Annotations[ProbeAssistantContainerStatusMapAnnotation] = string(statusMapRaw)
 		pod.Annotations[ProbeAssistantNameAnnotation] = pa.Namespace + "." + pa.Name
 	}
+
 	return nil
 }

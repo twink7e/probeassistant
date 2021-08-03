@@ -3,7 +3,7 @@ package mutating
 import (
 	"context"
 	appsv1alpha1 "github.com/twink7e/probeassistant/api/v1alpha1"
-	pactrl "github.com/twink7e/probeassistant/pkg/control/probe_assistant"
+	pactrl "github.com/twink7e/probeassistant/pkg/control/probeassistant"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -45,13 +45,38 @@ func (h *PodCreateHandler) probeAssistantMutatingPod(ctx context.Context, req ad
 	klog.V(3).Infof("[ProbeAssistant inject] begin to operation(%s) pod(%s/%s) resources(%s) subResources(%s)",
 		req.Operation, req.Namespace, req.Name, req.Resource, req.SubResource)
 
-	return buildProbeAssistant(pod, matchedProbeAssistan)
+	return h.buildProbeAssistant(ctx, pod, matchedProbeAssistan)
 
 }
 
-func buildProbeAssistant(pod *corev1.Pod, pa *appsv1alpha1.ProbeAssistant) error {
-	if err := pactrl.MakeProbeAssistantBingdingPod(pod, pa); err != nil {
+func (h *PodCreateHandler) buildProbeAssistant(ctx context.Context, pod *corev1.Pod, pa *appsv1alpha1.ProbeAssistant) error {
+	// filter containers
+	containersName := pactrl.GetBindingContainers(pod)
+	if len(*containersName) < 0 {
+		klog.V(3).Infof(
+			"ProbeAssistant: Pod(%s.%s) did not match any container name, please check pod's annotation(%s).",
+			pod.Namespace,
+			pod.Name,
+			pactrl.ProbeAssistantBindingContainersAnnotation)
 		return nil
 	}
+	// get matched container's idx from Pod.Spec.Containers
+	matchedContainerIndex := pactrl.GetMatchedContainerIndex(pod, containersName)
+
+	// set bingding(set Annotations)
+	if err := pactrl.MakeProbeAssistantBingdingPod(matchedContainerIndex, pod, pa); err != nil {
+		return nil
+	}
+
+	// inject/transfer pod liveness and readiness.
+	if err := pactrl.InjectPodProbe(pod, matchedContainerIndex); err != nil {
+		return err
+	}
+
+	// inject container mount
+	if err := pactrl.InjectMount(ctx, h.Client, pa, pod, matchedContainerIndex); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -47,6 +47,9 @@ func NewProbeAssistantReconciler(cli client.Client, sche *runtime.Scheme, rec re
 	}
 }
 
+//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=pods/status,verbs=get;update;patch
+
 //+kubebuilder:rbac:groups=apps.k8s.operatoros.io,resources=probeassistants,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.k8s.operatoros.io,resources=probeassistants/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps.k8s.operatoros.io,resources=probeassistants/finalizers,verbs=update

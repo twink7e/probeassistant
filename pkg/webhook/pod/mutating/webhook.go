@@ -8,9 +8,14 @@ import (
 	"net/http"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
+
+var podlog = logf.Log.WithName("probeassistant-resource")
+
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,sideEffects="None",admissionReviewVersions=v1;v1beta1,verbs=create;update,versions=v1,name=mpod.kb.io
 
 type PodCreateHandler struct {
 	// To use the client, you need to do the following:
