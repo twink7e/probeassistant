@@ -79,7 +79,7 @@ func transferHTTPActionContext(probe *corev1.Probe, container *corev1.Container,
 	klog.V(4).Infof("HTTP-Probe Host: %v://%v, Port: %v, Path: %v", scheme, host, port, path)
 	url := formatURL(scheme, host, port, path)
 
-	// set curlOptions and set --max-time
+	// set curl options and set --max-time
 	timeout := time.Duration(probe.TimeoutSeconds) * time.Second
 	curlOptions := fmt.Sprintf("--max-time %d", timeout)
 
@@ -116,7 +116,7 @@ func transferTCPActionContext(probe *corev1.Probe, container *corev1.Container, 
 	return NewInjectionExecAction(rawCmd), nil
 }
 
-// these codes copy from: k8s.io/kubernetes/pkg/kubelet/prober/prober.go
+// these codes are copy from: k8s.io/kubernetes/pkg/kubelet/prober/prober.go
 // to help format probe's Host/Port/Schema.
 
 func extractPort(param intstr.IntOrString, container corev1.Container) (int, error) {
