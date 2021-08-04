@@ -38,11 +38,12 @@ type ProbeAssistantSpec struct {
 	// "keepSave" warning it's best not to use.
 	ChangePodPolicy string `json:"changePodPolicy,omitempty"`
 
-	// a configmap.
-	// TODO(twink7e) add annotations.
+	// a configmap inject to pod.
+	// readiness Probe will exec <configMap-mount-point>/readiness/pre.sh and after.sh.
 	DefaultReadinessTmpl string `json:"defaultReadinessTmpl,omitempty"`
-	// a configmap.
-	// TODO(twink7e) add annotations.
+
+	// a configmap inject to pod.
+	// readiness Probe will exec <configMap-mount-point>/liveness/pre.sh and after.sh.
 	DefaultLivenessTmpl string `json:"defaultLivenessTmpl,omitempty"`
 
 	// Selector is a label query over pods that should match the replica count.
@@ -64,7 +65,7 @@ type ProbeAssistantStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// TODO(twink7e) add
+	// probe exec script got errors pods.
 	ProblemPods int32 `json:"problemPods"`
 
 	// matchedPods is the number of Pods whose labels are matched with this SidecarSet's selector and are created after sidecarset creates
